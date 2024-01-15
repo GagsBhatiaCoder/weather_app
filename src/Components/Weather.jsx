@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../App.css'
 import { IoMdSearch } from "react-icons/io";
 import { RiMistLine } from "react-icons/ri";
@@ -14,7 +14,7 @@ const Api = {
 }
 
 export default function Weather() {
-  const [query, setQuery] = useState("Delhi");
+  const [query, setQuery] = useState("");
   const [weather, setWeather] = useState({});
   const [weatherIcon, setWeatherIcon] = useState(null);
 
@@ -43,36 +43,73 @@ export default function Weather() {
       },
     });
   };
-  const fetchWeatherData = () => {
-    if (query.trim() === '') {
-      return alert("Please Type A City Name")
-    }
-    fetch(`${Api.base}weather?q=${query}&appid=${Api.key}&units=${Api.units}`)
-      .then(res => res.json())
-      .then(result => {
-        if (result.cod === "404") {
-          handleInvalidCity()
+  // const fetchWeatherData = () => {
+  //   if (query.trim() === '') {
+  //     return alert("Please Type A City Name")
+  //   }
+  //   fetch(`${Api.base}weather?q=${query}&appid=${Api.key}&units=${Api.units}`)
+  //     .then(res => res.json())
+  //     .then(result => {
+  //       if (result.cod === "404") {
+  //         handleInvalidCity()
+  //       } else {
+  //         setWeather(result);
+  //         const mainWeather = result.weather[0]?.main;
+  //         setWeatherIcon(iconMappings[mainWeather] || null);
+  //       }
+
+  //       setQuery("");
+  //     })
+  //     .catch(error => {
+  //       console.error('Error fetching weather data:', error);
+  //       handleInvalidCity();
+  //     });
+  // }
+  // const handleButtonClick = () => {
+  //   fetchWeatherData();
+  // };
+  // const search = (evt) => {
+  //   if (evt.key === "Enter") {
+  //     fetchWeatherData()
+  //   }
+  // }
+  useEffect(() => {
+    fetchWeatherData('Delhi');
+    // eslint-disable-next-line
+  }, [fetch]);
+  const fetchWeatherData = (city) => {
+    fetch(`${Api.base}weather?q=${city}&appid=${Api.key}&units=${Api.units}`)
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.cod === '404') {
+          handleInvalidCity();
         } else {
           setWeather(result);
           const mainWeather = result.weather[0]?.main;
           setWeatherIcon(iconMappings[mainWeather] || null);
         }
-
-        setQuery("");
+        setQuery('');
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Error fetching weather data:', error);
         handleInvalidCity();
       });
-  }
-  const handleButtonClick = () => {
-    fetchWeatherData();
   };
-  const search = (evt) => {
-    if (evt.key === "Enter") {
-      fetchWeatherData()
+
+  const handleButtonClick = () => {
+    if (query.trim() === "") {
+      alert("Please Enter a City Name")
+    } else {
+      fetchWeatherData(query);
     }
-  }
+
+  };
+
+  const search = (evt) => {
+    if (evt.key === 'Enter') {
+      fetchWeatherData(query);
+    }
+  };
   const dateBuilder = (d) => {
     let months = [
       "January",
@@ -132,11 +169,11 @@ export default function Weather() {
 
       <div className='col-md-3'>
         <div className='input-group col-md-3'>
-        
+
           <input className="form-control bg-transparent text-dark" type="text" placeholder="Type City" aria-label="default input example"
             onChange={e => setQuery(e.target.value)} value={query}
             onKeyDown={search} />
-            <button className="btn btn-outline-light" type="button" id="button-addon2"
+          <button className="btn btn-outline-light" type="button" id="button-addon2"
             onClick={handleButtonClick} ><IoMdSearch /></button>
         </div>
       </div>
@@ -144,7 +181,7 @@ export default function Weather() {
       {(typeof weather.main != "undefined") ? (
         <div >
           <div >
-            <h2>{weather.name},{weather.sys?.country}</h2>
+            <h1 className='my-2'>{weather.name},{weather.sys?.country}</h1>
           </div>
           <div className='date'>
             {dateBuilder(new Date())}
